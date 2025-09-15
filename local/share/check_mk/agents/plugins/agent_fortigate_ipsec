@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+"""Special agent for FortiGate IPsec tunnel monitoring."""
+
+import argparse
+import sys
+from typing import Any, Dict, Iterable
+
+import requests
+from requests import Response
+from requests.exceptions import RequestException
+
+
+API_PATH = "/api/v2/monitor/vpn/ipsec"
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Fetch FortiGate IPsec tunnel status via REST API")
+    parser.add_argument("--hostname", required=True, help="FortiGate management IP or hostname")
+    parser.add_argument("--api-key", required=True, help="FortiGate API token")
+    parser.add_argument("--port", type=int, default=443, help="FortiGate API HTTPS port")
+    parser.add_argument("--no-cert-check", action="store_true", help="Disable TLS certificate verification")
+    return parser.parse_args()
+
+
+def _request(url: str, headers: Dict[str, str], verify: bool) -> Response:
+    try:
+        response = requests.get(url, headers=headers, timeout=15, verify=verify)
+        response.raise_for_status()
+        return response
+    except RequestException as exc:
+        raise RuntimeError(str(exc)) from exc
+
+
+def _extract_tunnels(payload: Any) -> Iterable[Dict[str, Any]]:
+    if isinstance(payload, dict):
+        results = payload.get("results")
+        if isinstance(results, list):
+            return results
+        if "name" in payload:
+            return [payload]
+    if isinstance(payload, list):
+        return payload
+    return []
+
+
+def _format_value(value: Any) -> str:
+    if value is None:
+        return ""
+    return str(value)
+
+
+def main() -> int:
+    args = _parse_args()
+
+    url = f"https://{args.hostname}:{args.port}{API_PATH}"
+    headers = {"Authorization": f"Bearer {args.api_key}"}
+    verify = not args.no_cert_check
+
+    print("<<<fortigate_ipsec:sep(0)>>>")
+
+    if not verify:
+        requests.packages.urllib3.disable_warnings()  # type: ignore[attr-defined]
+
+    try:
+        response = _request(url, headers=headers, verify=verify)
+        payload = response.json()
+    except (RuntimeError, ValueError) as exc:
+        print(f"ERROR {exc}")
+        return 1
+
+    for tunnel in _extract_tunnels(payload):
+        name = _format_value(tunnel.get("name") or tunnel.get("tunnelname"))
+        status = _format_value(tunnel.get("status"))
+        local_gw = _format_value(tunnel.get("local_gw"))
+        remote_gw = _format_value(tunnel.get("remote_gw"))
+        rx_bytes = _format_value(tunnel.get("rx_bytes"))
+        tx_bytes = _format_value(tunnel.get("tx_bytes"))
+
+        if not name and tunnel.get("phase2name"):
+            name = _format_value(tunnel.get("phase2name"))
+
+        values = [name, status, local_gw, remote_gw, rx_bytes, tx_bytes]
+        print(";".join(values))
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
