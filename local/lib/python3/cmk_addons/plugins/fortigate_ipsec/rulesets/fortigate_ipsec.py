@@ -28,15 +28,14 @@ def _formspec_fortigate_ipsec() -> Dictionary:
                 required=False,
                 parameter_form=Integer(
                     title=Title("HTTPS port"),
-                    default_value=443,
-                    minvalue=1,
-                    maxvalue=65535,
+                    help_text=Help("Leave empty to use the default FortiGate HTTPS port (443)."),
                 ),
             ),
             "no_cert_check": DictElement(
                 required=False,
                 parameter_form=BooleanChoice(
-                    label=Title("Skip TLS certificate verification"),
+                    title=Title("Disable TLS certificate verification"),
+                    label=None,
                 ),
             ),
         },
