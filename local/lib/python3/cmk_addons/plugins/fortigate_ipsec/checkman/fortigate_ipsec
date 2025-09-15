@@ -1,0 +1,5 @@
+title: FortiGate IPsec Tunnel Monitoring
+agents: special
+license: GPL-3.0
+description:
+ This check monitors the status of FortiGate IPsec VPN tunnels via the FortiOS REST API.

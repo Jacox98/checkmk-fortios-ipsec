@@ -8,16 +8,17 @@ This repository contains a Checkmk extension package (`fortigate_ipsec`) that mo
 local/
 |-- lib/python3/
 |   |-- cmk_addons/plugins/fortigate_ipsec/
-|   |   |-- agent_based/fortigate_ipsec.py   # Check plug-in
-|   |   |-- checkman/fortigate_ipsec         # Check manual
-|   |   |-- graphing/fortigate_ipsec.py      # Graphing stub
-|   |   `-- rulesets/
-|   |       |-- fortigate_ipsec.py           # Ruleset stub
-|   |       `-- fortigate_ipsec_bakery.py    # Agent bakery ruleset stub
-|   `-- cmk/base/cee/plugins/bakery/
-|       `-- fortigate_ipsec.py               # Bakery plug-in stub
-`-- share/check_mk/agents/plugins/
-    `-- agent_fortigate_ipsec                # Special agent script
+|   |   |-- agent_based/fortigate_ipsec.py      # Check plug-in
+|   |   |-- checkman/fortigate_ipsec            # Check manual
+|   |   |-- graphing/fortigate_ipsec.py         # Graphing stub
+|   |   |-- libexec/agent_fortigate_ipsec       # Special agent script
+|   |   |-- rulesets/fortigate_ipsec.py         # Ruleset definition (Setup)
+|   |   |-- rulesets/fortigate_ipsec_bakery.py  # Agent bakery ruleset stub
+|   |   `-- server_side_calls/fortigate_ipsec.py# Special agent call configuration
+|   |-- cmk/base/cee/plugins/bakery/
+|   |   `-- fortigate_ipsec.py                  # Bakery plug-in stub
+|   `-- cmk/gui/plugins/wato/
+|       `-- fortigate_ipsec.py                  # Loader for the WATO ruleset
 ```
 
 Configuration for [oposs/mkp-builder](https://github.com/oposs/mkp-builder) resides in `.mkp-builder.ini`. The GitHub Actions workflow in `.github/workflows/build.yml` can produce signed release assets automatically.
@@ -41,8 +42,8 @@ Tag the repository with the desired package version (`v2.3.0p34` style) and push
 
 1. Download the generated `fortigate_ipsec-<version>.mkp`.
 2. Upload the package in Checkmk (`Setup -> Extension Packages -> Upload & Install`).
-3. Configure the FortiGate special agent with the firewall hostname, API token, and optional port/TLS settings.
-4. Perform a service discovery on the target host to create per-tunnel services reporting status and RX/TX counters.
+3. Create a rule via Setup -> Agents -> Other Integrations -> Fortinet FortiGate IPsec and provide hostname/API token details.
+4. Assign the rule to the FortiGate host, then perform a service discovery to create per-tunnel services reporting status and RX/TX counters.
 
 ## License
 
