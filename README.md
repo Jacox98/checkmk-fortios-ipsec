@@ -42,9 +42,10 @@ Tag the repository with the desired package version (`v2.3.0p34` style) and push
 
 1. Download the generated `fortigate_ipsec-<version>.mkp`.
 2. Upload the package in Checkmk (`Setup -> Extension Packages -> Upload & Install`).
-3. Create a rule via Setup -> Agents -> Other Integrations -> Fortinet FortiGate IPsec and provide hostname/API token details.
+3. Create a rule via Setup -> Agents -> Other Integrations -> Fortinet FortiGate IPsec and provide the API token (optionally adjust HTTPS port or disable TLS verification).
 4. Assign the rule to the FortiGate host, then perform a service discovery to create per-tunnel services reporting status and RX/TX counters.
 
 ## License
 
 This project is licensed under the GPL-3.0. See [LICENSE](LICENSE) for details.
+

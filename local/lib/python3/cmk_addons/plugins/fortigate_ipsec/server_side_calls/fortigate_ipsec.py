@@ -21,10 +21,10 @@ def _fortigate_ipsec_commands(params, host_config):
     else:
         api_key_value = str(api_key)
 
-    hostname = params.get("hostname") or getattr(host_config.primary_ip_config, "address", None)
+    hostname = getattr(host_config.primary_ip_config, "address", None)
     if not hostname:
         raise MKGeneralException(
-            "FortiGate IPsec special agent could not determine a hostname or IP."
+            "FortiGate IPsec special agent could not determine a host address."
         )
 
     args = ["--hostname", hostname, "--api-key", api_key_value]

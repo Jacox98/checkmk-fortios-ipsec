@@ -8,7 +8,6 @@ from cmk.rulesets.v1.form_specs import (
     Dictionary,
     Integer,
     Password,
-    String,
     migrate_to_password,
 )
 from cmk.rulesets.v1.rule_specs import Help, SpecialAgent, Title, Topic
@@ -29,15 +28,6 @@ def _formspec_fortigate_ipsec() -> Dictionary:
                     migrate=migrate_to_password,
                     help_text=Help(
                         "API token generated on the FortiGate with read access to IPsec monitoring data."
-                    ),
-                ),
-            ),
-            "hostname": DictElement(
-                required=False,
-                parameter_form=String(
-                    title=Title("FortiGate hostname or IP"),
-                    help_text=Help(
-                        "Leave empty to use the host's primary IP address configured in Checkmk."
                     ),
                 ),
             ),
