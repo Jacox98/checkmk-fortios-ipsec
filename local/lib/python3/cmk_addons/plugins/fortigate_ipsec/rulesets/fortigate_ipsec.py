@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from cmk.rulesets.v1.form_specs import DictElement, Dictionary, Integer, Password, migrate_to_password
+from cmk.rulesets.v1.form_specs import BooleanChoice, DictElement, Dictionary, Integer, Password, migrate_to_password
 from cmk.rulesets.v1.rule_specs import Help, SpecialAgent, Title, Topic
 
 
@@ -35,12 +35,8 @@ def _formspec_fortigate_ipsec() -> Dictionary:
             ),
             "no_cert_check": DictElement(
                 required=False,
-                parameter_form=Integer(
-                    title=Title("Disable TLS certificate verification"),
-                    default_value=0,
-                    minvalue=0,
-                    maxvalue=1,
-                    help_text=Help("Set to 1 to skip TLS certificate verification."),
+                parameter_form=BooleanChoice(
+                    label=Title("Skip TLS certificate verification"),
                 ),
             ),
         },
