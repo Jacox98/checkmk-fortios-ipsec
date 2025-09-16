@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from cmk.server_side_calls.v1 import (
     SpecialAgentCommand,
     SpecialAgentConfig,
@@ -10,6 +12,7 @@ from cmk.server_side_calls.v1 import (
 from cmk.utils.exceptions import MKGeneralException
 
 AGENT_NAME = "fortigate_ipsec"
+AGENT_BINARY = Path(__file__).resolve().parent.parent / "libexec" / "agent_fortigate_ipsec"
 
 
 def _fortigate_ipsec_commands(params, host_config):
@@ -37,6 +40,7 @@ def _fortigate_ipsec_commands(params, host_config):
         args.append("--no-cert-check")
 
     yield SpecialAgentCommand(
+        command_path=str(AGENT_BINARY),
         command_arguments=args,
     )
 
