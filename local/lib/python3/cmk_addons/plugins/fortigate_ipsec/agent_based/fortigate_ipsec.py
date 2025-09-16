@@ -4,7 +4,14 @@ from __future__ import annotations
 
 from typing import Dict, Iterable, List
 
-from cmk.agent_based.v1 import Result, Service, State, register
+from cmk.agent_based.v2 import (
+    AgentSection,
+    CheckPlugin,
+    DiscoveryResult,
+    Result,
+    Service,
+    State,
+)
 
 Section = List[Dict[str, str]]
 
@@ -35,7 +42,7 @@ def parse_fortigate_ipsec(string_table: List[List[str]]) -> Section:
     return section
 
 
-def discover_fortigate_ipsec(section: Section) -> Iterable[Service]:
+def discover_fortigate_ipsec(section: Section) -> DiscoveryResult:
     if section and section[0].get("error"):
         return
     for tunnel in section:
@@ -69,12 +76,12 @@ def check_fortigate_ipsec(item: str, section: Section) -> Iterable[Result]:
         return
 
 
-register.agent_section(
+agent_section_fortigate_ipsec = AgentSection(
     name="fortigate_ipsec",
     parse_function=parse_fortigate_ipsec,
 )
 
-register.check_plugin(
+check_plugin_fortigate_ipsec = CheckPlugin(
     name="fortigate_ipsec",
     service_name="FortiGate IPsec %s",
     discovery_function=discover_fortigate_ipsec,
