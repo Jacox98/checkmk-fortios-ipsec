@@ -2,18 +2,30 @@
 
 from __future__ import annotations
 
+from time import time
 from typing import Dict, Iterable, List
 
 from cmk.agent_based.v2 import (
     AgentSection,
     CheckPlugin,
     DiscoveryResult,
+    GetRateError,
+    Metric,
     Result,
     Service,
     State,
+    get_rate,
+    get_value_store,
 )
 
 Section = List[Dict[str, str]]
+
+
+def _parse_float(value: str | None) -> float:
+    try:
+        return float(value) if value is not None else 0.0
+    except (TypeError, ValueError):
+        return 0.0
 
 
 def parse_fortigate_ipsec(string_table: List[List[str]]) -> Section:
@@ -51,10 +63,13 @@ def discover_fortigate_ipsec(section: Section) -> DiscoveryResult:
             yield Service(item=name)
 
 
-def check_fortigate_ipsec(item: str, section: Section) -> Iterable[Result]:
+def check_fortigate_ipsec(item: str, section: Section) -> Iterable[Result | Metric]:
     if section and section[0].get("error"):
         yield Result(state=State.CRIT, summary=f"Tunnel data unavailable: {section[0]['error']}")
         return
+
+    value_store = get_value_store()
+    now = time()
 
     for tunnel in section:
         if tunnel.get("name") != item:
@@ -62,8 +77,6 @@ def check_fortigate_ipsec(item: str, section: Section) -> Iterable[Result]:
         status = (tunnel.get("status") or "").lower()
         is_up = status == "up"
         state = State.OK if is_up else State.CRIT
-        summary = f"Tunnel {item} is {'up' if is_up else 'down'}"
-        yield Result(state=state, summary=summary)
         details = ", ".join(
             [
                 f"Local GW: {tunnel.get('local_gw') or '-'}",
@@ -72,7 +85,20 @@ def check_fortigate_ipsec(item: str, section: Section) -> Iterable[Result]:
                 f"TX: {tunnel.get('tx_bytes') or '0'} B",
             ]
         )
-        yield Result(state=State.OK, notice=details)
+        summary = f"Tunnel {item} is {'up' if is_up else 'down'} - {details}"
+        yield Result(state=state, summary=summary)
+
+        rx_total = _parse_float(tunnel.get("rx_bytes"))
+        tx_total = _parse_float(tunnel.get("tx_bytes"))
+        for suffix, total, metric_name in (
+            ("rx", rx_total, "fortigate_ipsec_rx_bandwidth"),
+            ("tx", tx_total, "fortigate_ipsec_tx_bandwidth"),
+        ):
+            try:
+                rate = get_rate(value_store, f"{item}.{suffix}", now, total, raise_overflow=True)
+            except GetRateError:
+                continue
+            yield Metric(metric_name, rate, boundaries=(0.0, None))
         return
 
 
@@ -80,6 +106,7 @@ agent_section_fortigate_ipsec = AgentSection(
     name="fortigate_ipsec",
     parse_function=parse_fortigate_ipsec,
 )
+
 
 check_plugin_fortigate_ipsec = CheckPlugin(
     name="fortigate_ipsec",

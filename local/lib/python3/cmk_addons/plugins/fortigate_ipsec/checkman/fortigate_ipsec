@@ -3,3 +3,6 @@ agents: special
 license: GPL-3.0
 description:
  This check monitors the status of FortiGate IPsec VPN tunnels via the FortiOS REST API.
+metrics:
+ - fortigate_ipsec_rx_bandwidth: Received bandwidth (B/s)
+ - fortigate_ipsec_tx_bandwidth: Transmitted bandwidth (B/s)
