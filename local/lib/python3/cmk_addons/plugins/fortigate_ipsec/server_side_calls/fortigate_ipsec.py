@@ -13,7 +13,13 @@ from cmk.server_side_calls.v1 import (
 try:
     from cmk.utils.exceptions import MKGeneralException
 except ImportError:
-    from cmk.exceptions import MKGeneralException
+    try:
+        from cmk.exceptions import MKGeneralException
+    except ImportError:
+        class MKGeneralException(Exception):
+            # Fallback when Checkmk does not ship MKGeneralException
+            pass
+
 
 AGENT_NAME = "fortigate_ipsec"
 AGENT_BINARY = Path(__file__).resolve().parent.parent / "libexec" / "agent_fortigate_ipsec"
