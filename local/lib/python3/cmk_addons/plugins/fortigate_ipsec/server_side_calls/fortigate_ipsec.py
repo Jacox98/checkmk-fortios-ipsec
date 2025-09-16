@@ -10,7 +10,10 @@ from cmk.server_side_calls.v1 import (
     SpecialAgentConfig,
     noop_parser,
 )
-from cmk.utils.exceptions import MKGeneralException
+try:
+    from cmk.utils.exceptions import MKGeneralException
+except ImportError:
+    from cmk.exceptions import MKGeneralException
 
 AGENT_NAME = "fortigate_ipsec"
 AGENT_BINARY = Path(__file__).resolve().parent.parent / "libexec" / "agent_fortigate_ipsec"
