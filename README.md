@@ -2,6 +2,8 @@
 
 This repository contains a Checkmk extension package (`fortigate_ipsec`) that monitors the state of IPsec VPN tunnels on FortiGate firewalls via the FortiOS REST API. It ships a special agent to collect tunnel data and an agent-based check plug-in that creates one service per tunnel and reports its connectivity alongside traffic counters.
 
+The codebase is tested against Checkmk 2.2 and 2.3 releases. The special agent call automatically adapts to the evolving `SpecialAgentCommand` API so the same MKP works across both generations. When running on older builds that lack `MKGeneralException`, a local fallback keeps configuration errors readable.
+
 ## Repository Layout
 
 ```
@@ -14,7 +16,7 @@ local/
 |   |   |-- libexec/agent_fortigate_ipsec       # Special agent script
 |   |   |-- rulesets/fortigate_ipsec.py         # Ruleset definition (Setup)
 |   |   |-- rulesets/fortigate_ipsec_bakery.py  # Agent bakery ruleset stub
-|   |   `-- server_side_calls/fortigate_ipsec.py# Special agent call configuration
+|   |   `-- server_side_calls/fortigate_ipsec.py  # Special agent call configuration
 |   |-- cmk/base/cee/plugins/bakery/
 |   |   `-- fortigate_ipsec.py                  # Bakery plug-in stub
 |   `-- cmk/gui/plugins/wato/

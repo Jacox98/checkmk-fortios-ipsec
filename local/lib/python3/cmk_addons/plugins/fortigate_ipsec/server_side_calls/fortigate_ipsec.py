@@ -18,13 +18,15 @@ except ImportError:
         from cmk.exceptions import MKGeneralException
     except ImportError:
         class MKGeneralException(Exception):
-            # Fallback when Checkmk does not ship MKGeneralException
+            """Fallback when Checkmk does not ship MKGeneralException."""
+
             pass
 
 
 AGENT_NAME = "fortigate_ipsec"
 AGENT_BINARY = Path(__file__).resolve().parent.parent / "libexec" / "agent_fortigate_ipsec"
 _SPECIAL_AGENT_COMMAND_PARAMS = signature(SpecialAgentCommand).parameters
+# Support both <=2.2 (requires command_path) and >=2.3 (resolves binary automatically).
 
 
 def _fortigate_ipsec_commands(params: Dict[str, Any], host_config) -> Iterable[SpecialAgentCommand]:
@@ -49,7 +51,7 @@ def _fortigate_ipsec_commands(params: Dict[str, Any], host_config) -> Iterable[S
         arguments.append("--no-cert-check")
 
     command_kwargs = {"command_arguments": arguments}
-    if "command_path" in _SPECIAL_AGENT_COMMAND_PARAMS:  # Compatibility with older Checkmk
+    if "command_path" in _SPECIAL_AGENT_COMMAND_PARAMS:  # <=2.2 still expects the explicit binary path
         command_kwargs["command_path"] = str(AGENT_BINARY)
     yield SpecialAgentCommand(**command_kwargs)
 
