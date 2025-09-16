@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from inspect import signature
 from pathlib import Path
 from typing import Any, Dict, Iterable
 
@@ -23,6 +24,7 @@ except ImportError:
 
 AGENT_NAME = "fortigate_ipsec"
 AGENT_BINARY = Path(__file__).resolve().parent.parent / "libexec" / "agent_fortigate_ipsec"
+_SPECIAL_AGENT_COMMAND_PARAMS = signature(SpecialAgentCommand).parameters
 
 
 def _fortigate_ipsec_commands(params: Dict[str, Any], host_config) -> Iterable[SpecialAgentCommand]:
@@ -46,10 +48,10 @@ def _fortigate_ipsec_commands(params: Dict[str, Any], host_config) -> Iterable[S
     if params.get("no_cert_check"):
         arguments.append("--no-cert-check")
 
-    yield SpecialAgentCommand(
-        command_path=str(AGENT_BINARY),
-        command_arguments=arguments,
-    )
+    command_kwargs = {"command_arguments": arguments}
+    if "command_path" in _SPECIAL_AGENT_COMMAND_PARAMS:  # Compatibility with older Checkmk
+        command_kwargs["command_path"] = str(AGENT_BINARY)
+    yield SpecialAgentCommand(**command_kwargs)
 
 
 special_agent_fortigate_ipsec = SpecialAgentConfig(
