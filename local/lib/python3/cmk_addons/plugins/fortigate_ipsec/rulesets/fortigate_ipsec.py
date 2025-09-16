@@ -2,7 +2,14 @@
 
 from __future__ import annotations
 
-from cmk.rulesets.v1.form_specs import BooleanChoice, DictElement, Dictionary, Integer, Password, migrate_to_password
+from cmk.rulesets.v1.form_specs import (
+    BooleanChoice,
+    DictElement,
+    Dictionary,
+    Integer,
+    Password,
+    migrate_to_password,
+)
 from cmk.rulesets.v1.rule_specs import Help, SpecialAgent, Title, Topic
 
 
@@ -28,14 +35,13 @@ def _formspec_fortigate_ipsec() -> Dictionary:
                 required=False,
                 parameter_form=Integer(
                     title=Title("HTTPS port"),
-                    help_text=Help("Leave empty to use the default FortiGate HTTPS port (443)."),
+                    help_text=Help("Leave empty to use the default port 443."),
                 ),
             ),
             "no_cert_check": DictElement(
                 required=False,
                 parameter_form=BooleanChoice(
                     title=Title("Disable TLS certificate verification"),
-                    label=None,
                 ),
             ),
         },
