@@ -50,6 +50,14 @@ def _fortigate_ipsec_commands(params: Dict[str, Any], host_config) -> Iterable[S
     if params.get("no_cert_check"):
         arguments.append("--no-cert-check")
 
+    vdom = params.get("vdom")
+    if vdom:
+        arguments += ["--vdom", str(vdom)]
+
+    for flt in params.get("filters", []) or []:
+        if flt:
+            arguments += ["--filter", str(flt)]
+
     command_kwargs = {"command_arguments": arguments}
     if "command_path" in _SPECIAL_AGENT_COMMAND_PARAMS:  # <=2.2 still expects the explicit binary path
         command_kwargs["command_path"] = str(AGENT_BINARY)

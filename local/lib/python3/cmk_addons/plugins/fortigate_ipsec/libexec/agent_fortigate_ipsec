@@ -5,11 +5,12 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 from typing import Any, Dict, Iterable, List, Optional
 
 import requests
 from requests import Response
-from requests.exceptions import RequestException
+from requests.exceptions import HTTPError, RequestException
 
 
 API_PATH = "/api/v2/monitor/vpn/ipsec"
@@ -44,12 +45,39 @@ def _build_params(vdom: Optional[str], filters: Iterable[str]) -> Dict[str, Any]
 
 
 def _request(url: str, headers: Dict[str, str], params: Dict[str, Any], verify: bool) -> Response:
-    try:
-        response = requests.get(url, headers=headers, params=params, timeout=15, verify=verify)
-        response.raise_for_status()
-        return response
-    except RequestException as exc:
-        raise RuntimeError(str(exc)) from exc
+    backoff = 1.0
+    max_attempts = 5
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=15, verify=verify)
+        except RequestException as exc:
+            if attempt == max_attempts:
+                raise RuntimeError(str(exc)) from exc
+            time.sleep(backoff)
+            backoff *= 2
+            continue
+
+        if response.status_code == 429:
+            retry_after = response.headers.get("Retry-After")
+            try:
+                delay = float(retry_after)
+            except (TypeError, ValueError):
+                delay = backoff
+            if attempt == max_attempts:
+                raise RuntimeError("FortiGate API rate limit exceeded (HTTP 429)")
+            time.sleep(max(delay, 1.0))
+            backoff *= 2
+            continue
+
+        try:
+            response.raise_for_status()
+            return response
+        except HTTPError as exc:
+            if attempt == max_attempts:
+                raise RuntimeError(str(exc)) from exc
+            time.sleep(backoff)
+            backoff *= 2
+    raise RuntimeError("FortiGate API request failed after multiple retries")
 
 
 def _extract_tunnels(payload: Any) -> Iterable[Dict[str, Any]]:

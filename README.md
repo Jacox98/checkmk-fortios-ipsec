@@ -1,8 +1,8 @@
 # FortiGate IPsec Checkmk Extension
 
-This repository contains a Checkmk extension package (`fortigate_ipsec`) that monitors the state of IPsec VPN tunnels on FortiGate firewalls via the FortiOS REST API. It ships a special agent to collect tunnel data and an agent-based check plug-in that creates one service per tunnel and reports its connectivity alongside traffic counters. It also exposes per-tunnel receive/transmit bandwidth metrics (`fortigate_ipsec_rx_bandwidth`, `fortigate_ipsec_tx_bandwidth`) so Checkmk can graph historical throughput.
+This repository contains a Checkmk extension package (`fortigate_ipsec`) that monitors the state of IPsec VPN tunnels on FortiGate firewalls via the FortiOS REST API. It ships a special agent to collect tunnel data and an agent-based check plug-in that creates one service per tunnel and reports its connectivity alongside traffic counters. It also exposes per-tunnel receive/transmit bandwidth metrics (`fortigate_ipsec_rx_bandwidth`, `fortigate_ipsec_tx_bandwidth`) so Checkmk can graph historical throughput. The special agent backs off automatically when FortiOS returns HTTP 429 rate-limit responses.
 
-The codebase is tested against Checkmk 2.2 and 2.3 releases. The special agent call automatically adapts to the evolving `SpecialAgentCommand` API so the same MKP works across both generations. When running on older builds that lack `MKGeneralException`, a local fallback keeps configuration errors readable.
+The codebase is tested against Checkmk 2.2 and 2.3 releases. The special agent call automatically adapts to the evolving `SpecialAgentCommand` API so the same MKP works across both generations. When running on older builds that lack `MKGeneralException`, a local fallback keeps configuration errors readable. You can optionally scope API calls to a specific VDOM and provide FortiOS filter expressions to limit the tunnel list.
 
 ## Repository Layout
 

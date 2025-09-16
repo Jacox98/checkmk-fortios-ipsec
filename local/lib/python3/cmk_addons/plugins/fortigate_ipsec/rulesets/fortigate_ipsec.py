@@ -7,7 +7,9 @@ from cmk.rulesets.v1.form_specs import (
     DictElement,
     Dictionary,
     Integer,
+    List,
     Password,
+    String,
     migrate_to_password,
 )
 from cmk.rulesets.v1.rule_specs import Help, SpecialAgent, Title, Topic
@@ -36,6 +38,23 @@ def _formspec_fortigate_ipsec() -> Dictionary:
                 parameter_form=Integer(
                     title=Title("HTTPS port"),
                     help_text=Help("Leave empty to use the default port 443."),
+                ),
+            ),
+            "vdom": DictElement(
+                required=False,
+                parameter_form=String(
+                    title=Title("VDOM"),
+                    help_text=Help("Optional virtual domain to query on the FortiGate."),
+                ),
+            ),
+            "filters": DictElement(
+                required=False,
+                parameter_form=List(
+                    title=Title("API filters"),
+                    help_text=Help(
+                        "Optional FortiOS filter expressions (e.g. username=@example). Repeat to narrow the result set."
+                    ),
+                    element_template=String(),
                 ),
             ),
             "no_cert_check": DictElement(
