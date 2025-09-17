@@ -3,6 +3,9 @@ agents: special
 license: GPL-3.0
 description:
  This check monitors the status of FortiGate IPsec VPN tunnels via the FortiOS REST API.
+ It evaluates the phase2 proxy objects returned by /api/v2/monitor/vpn/ipsec, including their
+ state, source/destination selectors, and per-proxy byte counters. The service summary reports
+ remote gateway, tunnel type/port, connection counts, and aggregates RX/TX statistics.
 metrics:
  - fortigate_ipsec_rx_bandwidth: Received bandwidth (B/s)
  - fortigate_ipsec_tx_bandwidth: Transmitted bandwidth (B/s)

@@ -54,6 +54,10 @@ def _fortigate_ipsec_commands(params: Dict[str, Any], host_config) -> Iterable[S
     if vdom:
         arguments += ["--vdom", str(vdom)]
 
+    tunnel = params.get("tunnel")
+    if tunnel:
+        arguments += ["--tunnel", str(tunnel)]
+
     for flt in params.get("filters", []) or []:
         if flt:
             arguments += ["--filter", str(flt)]

@@ -47,6 +47,15 @@ def _formspec_fortigate_ipsec() -> Dictionary:
                     help_text=Help("Optional virtual domain to query on the FortiGate."),
                 ),
             ),
+            "tunnel": DictElement(
+                required=False,
+                parameter_form=String(
+                    title=Title("Tunnel name"),
+                    help_text=Help(
+                        "Optional FortiOS tunnel name forwarded via the API 'tunnel' query parameter."
+                    ),
+                ),
+            ),
             "filters": DictElement(
                 required=False,
                 parameter_form=List(
