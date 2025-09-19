@@ -209,5 +209,9 @@ __marimo__/
 
 !local/
 !local/**
+# Re-ignore generated artifacts within local/
+local/**/__pycache__/
+local/**/*.py[cod]
 
 ck_tmp/
+

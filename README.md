@@ -47,7 +47,16 @@ Tag the repository with the desired package version (`v2.3.0p34` style) and push
 3. Create a rule via Setup -> Agents -> Other Integrations -> Fortinet FortiGate IPsec and provide the API token. Adjust HTTPS port, disable TLS verification, scope to a VDOM, set the optional tunnel name, or add FortiOS filter expressions as needed.
 4. Assign the rule to the FortiGate host, then perform a service discovery to create per-tunnel services reporting status and RX/TX counters.
 
+## Publishing
+
+1. Update version metadata in `.mkp-builder.ini`, `extension.yml`, and `CHANGELOG.md`.
+2. Run `python -m compileall local` and `mkp-builder build` locally to validate the package.
+3. Commit the changes and create a git tag following the `v<version>` convention (e.g. `v2.3.0p34`).
+4. Push the tag or manually trigger the GitHub Actions workflow to produce the MKP artifact.
+5. Attach the generated `.mkp` file to the GitHub release or publish it on the Checkmk Exchange.
+
 ## License
 
 This project is licensed under the GPL-3.0. See [LICENSE](LICENSE) for details.
+
 
