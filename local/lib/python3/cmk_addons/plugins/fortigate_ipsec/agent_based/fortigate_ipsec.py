@@ -17,6 +17,7 @@ from cmk.agent_based.v2 import (
     State,
     get_rate,
     get_value_store,
+    render,
 )
 
 Section = List[Dict[str, Any]]
@@ -151,6 +152,21 @@ def _summarize_status(tunnel: Dict[str, Any]) -> tuple[State, str, int, int, int
     return state, status, up, down, total
 
 
+def _format_bytes(value: float) -> str:
+    return render.bytes(int(value))
+
+
+def _format_bandwidth(total_rx: float, total_tx: float) -> str | None:
+    traffic_parts: List[str] = []
+    if total_rx > 0:
+        traffic_parts.append(f"RX {_format_bytes(total_rx)}")
+    if total_tx > 0:
+        traffic_parts.append(f"TX {_format_bytes(total_tx)}")
+    if not traffic_parts:
+        return None
+    return "Traffic: " + ", ".join(traffic_parts)
+
+
 def check_fortigate_ipsec(item: str, section: Section) -> Iterable[Result | Metric]:
     if section and section[0].get("error"):
         yield Result(state=State.CRIT, summary=f"Tunnel data unavailable: {section[0]['error']}")
@@ -177,35 +193,36 @@ def check_fortigate_ipsec(item: str, section: Section) -> Iterable[Result | Metr
         rx_total = _parse_float(tunnel.get("incoming_bytes") or tunnel.get("rx_bytes"))
         tx_total = _parse_float(tunnel.get("outgoing_bytes") or tunnel.get("tx_bytes"))
 
-        summary_parts = [f"Status {status_display}"]
+        summary_fields: List[str] = [f"Status: {status_display}"]
         if remote_gw and remote_gw != "-":
-            summary_parts.append(f"Remote {remote_gw}")
+            summary_fields.append(f"Remote: {remote_gw}")
         if local_gw and local_gw != "-":
-            summary_parts.append(f"Local {local_gw}")
+            summary_fields.append(f"Local: {local_gw}")
         if connection_count not in (None, ""):
-            summary_parts.append(f"Connections {connection_count}")
+            summary_fields.append(f"Connections: {connection_count}")
         if tunnel_type:
-            summary_parts.append(f"Type {tunnel_type}")
+            summary_fields.append(f"Type: {tunnel_type}")
         if remote_port not in (None, ""):
-            summary_parts.append(f"Port {remote_port}")
-        summary_parts.append(f"RX {int(rx_total)} B")
-        summary_parts.append(f"TX {int(tx_total)} B")
+            summary_fields.append(f"Port: {remote_port}")
+        bandwidth_line = _format_bandwidth(rx_total, tx_total)
+        if bandwidth_line:
+            summary_fields.append(bandwidth_line)
 
-        yield Result(state=state, summary=", ".join(summary_parts))
+        yield Result(state=state, summary="; ".join(summary_fields))
 
         for proxy in tunnel.get("proxies") or []:
-            p_status = str(proxy.get("status") or "").upper() or "UNKNOWN"
+            proxy_status_text = str(proxy.get("status") or "").strip().upper() or "UNKNOWN"
             p_name = proxy.get("p2name") or "Phase2"
             src = ", ".join(_format_endpoint(entry) for entry in proxy.get("proxy_src") or []) or "-"
             dst = ", ".join(_format_endpoint(entry) for entry in proxy.get("proxy_dst") or []) or "-"
-            details = [f"{p_name}: {p_status}", f"src {src} -> dst {dst}"]
+            detail_fields = [f"{p_name}: {proxy_status_text}", f"Selectors: {src} -> {dst}"]
             proxy_rx = _parse_float(proxy.get("incoming_bytes") or proxy.get("rx_bytes"))
             proxy_tx = _parse_float(proxy.get("outgoing_bytes") or proxy.get("tx_bytes"))
-            if proxy_rx:
-                details.append(f"RX {int(proxy_rx)} B")
-            if proxy_tx:
-                details.append(f"TX {int(proxy_tx)} B")
-            yield Result(state=State.OK, notice=" | ".join(details))
+            proxy_bandwidth = _format_bandwidth(proxy_rx, proxy_tx)
+            if proxy_bandwidth:
+                detail_fields.append(proxy_bandwidth)
+            yield Result(state=State.OK, notice="; ".join(detail_fields))
+
         for suffix, total_value, metric_name in (
             ("rx", rx_total, "fortigate_ipsec_rx_bandwidth"),
             ("tx", tx_total, "fortigate_ipsec_tx_bandwidth"),
@@ -230,9 +247,3 @@ check_plugin_fortigate_ipsec = CheckPlugin(
     discovery_function=discover_fortigate_ipsec,
     check_function=check_fortigate_ipsec,
 )
-
-
-
-
-
-
