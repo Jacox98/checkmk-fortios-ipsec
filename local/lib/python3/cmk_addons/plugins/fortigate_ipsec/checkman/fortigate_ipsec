@@ -3,9 +3,12 @@ agents: special
 license: GPL-3.0
 description:
  This check monitors the status of FortiGate IPsec VPN tunnels via the FortiOS REST API.
- It evaluates the phase2 proxy objects returned by /api/v2/monitor/vpn/ipsec, including their
- state, source/destination selectors, and per-proxy byte counters. The service summary reports
- remote gateway, tunnel type/port, connection counts, and aggregates RX/TX statistics.
+ It evaluates the phase2 proxy objects returned by /api/v2/monitor/vpn/ipsec to expose per-proxy
+ state and selectors. The service summary emphasises tunnel status with phase2 counts, remote/local
+ gateways, connection totals, type/port information, and only renders traffic figures when RX/TX
+ data is present (in Checkmk's canonical units). Phase2 details list selectors alongside any
+ observed traffic for quick troubleshooting. A bidirectional Perf-O-Meter visualises receive and
+ transmit throughput at a glance.
 metrics:
  - fortigate_ipsec_rx_bandwidth: Received bandwidth (B/s)
  - fortigate_ipsec_tx_bandwidth: Transmitted bandwidth (B/s)
